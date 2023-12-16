@@ -8,10 +8,13 @@ from src.sage import run_sage_target, evaluate_sage_target
 import pickle
 import os
 
+# configure parameters
 argparser = argparse.ArgumentParser("multi-gpu training")
-argparser.add_argument('--gpu', type=int, default=1,
+argparser.add_argument('--gpu', type=int, default=0,
                        help="GPU device ID. Use -1 for CPU training")
+# target model: 3 types
 argparser.add_argument('--target-model', type=str, default='gat')
+# datasets: 6 types
 argparser.add_argument('--dataset', type=str, default='dblp',
                        help="['dblp', 'pubmed', 'citeseer_full', 'coauthor_phy', 'acm' 'amazon_photo']")
 argparser.add_argument('--num-epochs', type=int, default=200)
@@ -52,6 +55,7 @@ g, n_classes = load_graphgallery_data(args.dataset)
 in_feats = g.ndata['features'].shape[1]
 labels = g.ndata['labels']
 
+# split the dataset
 train_g, val_g, test_g = split_graph(g, frac_list=[0.6, 0.2, 0.2])
 print(train_g.number_of_nodes(), val_g.number_of_nodes(), test_g.number_of_nodes())
 

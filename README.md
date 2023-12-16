@@ -1,23 +1,37 @@
 # Model Stealing Attacks Against Inductive Graph Neural Networks
 
-This is a PyTorch implementation of Model Stealing Attacks Against Inductive Graph Neural Networks, as described in our paper:
+This is a **modified** PyTorch implementation of Model Stealing Attacks Against Inductive Graph Neural Networks, as described in our paper:
 
 Yun Shen, Xinlei He, Yufei Han, Yang Zhang, [Model Stealing Attacks Against Inductive Graph Neural Networks](https://arxiv.org/abs/2112.08331) (IEEE S&P 2022)
 
-## Step 0: Setup the environments
+**The project provided by the author of the paper encounters some errors when configuring it, and I modified parts of it to run smoothly on my computer. I also provide a configured docker image if you need:**
+
+链接: https://pan.baidu.com/s/1fSIKJMCSoNIeY4aFCJWkcw?pwd=usmu 提取码: usmu 
+
+To import this image:
 
 ```
-conda env create --file environment.yaml &&
-conda activate gnn_model_stealing && 
+docker import - new_yixin_project < yixin_project.tar
+```
+
+
+
+## Step 0: Setup the environments
+
+
+```
+conda env create --file environment.yaml
+conda activate gnn_model_stealing_backend
 # Install GraphGallery
-wget https://github.com/EdisonLeeeee/GraphGallery/archive/refs/tags/1.0.0.tar.gz && 
-tar -zxvf 1.0.0.tar.gz && 
-cd GraphGallery-1.0.0/ &&
-pip install -e . --verbose &&
+# wget https://github.com/EdisonLeeeee/GraphGallery/archive/refs/tags/1.0.0.tar.gz
+tar -zxvf 1.0.0.tar.gz
+cd GraphGallery-1.0.0/
+pip install -e . --verbose
 cd ..
 ```
 
 ## Step 1: Train the target models:
+
 
 ```
 cd code;
@@ -26,6 +40,34 @@ python train_target_model.py --dataset citeseer_full --target-model gat  --num-h
 # You can also run it with a specified gpu (e.g., gpu02):
 python train_target_model.py --dataset citeseer_full --target-model gat  --num-hidden 256 --gpu 2
 ```
+
+### Error 1: TypeError: object of type 'DGLHeteroGraph' has no len()
+
+When you start training, you may encounter the error:
+```
+TypeError: object of type 'DGLHeteroGraph' has no len()
+```
+This might be a hidden tiny bug of DGL=0.7.
+To solve this problem, you may consider degrading DGL to a lower version like 0.6x or consider the tiny change in file 'dgl/data/utils.py':(note that the path of file 'dgl/data/utils.py' is shown in your error message)
+```
+# See also https://github.com/dmlc/dgl/blob/master/python/dgl/data/utils.py#L78
+num_data = len(dataset) => num_data = len(dataset.nodes())
+```
+
+### Error 2: RuntimeError: cuda runtime error (10) : invalid device ordinal
+If you are using *the project provided by the author of the paper*, 
+you may encounter this error:
+```
+RuntimeError: cuda runtime error (10) : invalid device ordinal
+```
+This is because there is only one GPU in your computer, 
+consider the tiny change in line 12 of `train_target_model.py`:
+```
+default=1 => default=0
+```
+Do the same thing in `attack.py`.
+
+
 Note that we use the following datasets, target model architectures, and numbers of hidden neurons in our paper:
 ```
 --dataset:      ['dblp', 'pubmed', 'citeseer_full', 'coauthor_phy', 'acm', 'amazon_photo']

@@ -18,7 +18,7 @@ from core.model_handler import ModelHandler
 torch.set_num_threads(1)
 torch.manual_seed(0)
 
-
+# the IDGL framework
 def idgl(config):
     model = ModelHandler(config)
     model.train()
@@ -26,12 +26,9 @@ def idgl(config):
     return adj
 
 
-DATASETS = ['citeseer_full']
-RESPONSES = ['projection', 'prediction', 'embedding']
-
-
+# set the parameters
 argparser = argparse.ArgumentParser("multi-gpu training")
-argparser.add_argument('--gpu', type=int, default=1,
+argparser.add_argument('--gpu', type=int, default=0,
                        help="GPU device ID. Use -1 for CPU training")
 argparser.add_argument('--dataset', type=str, default='citeseer_full')
 argparser.add_argument('--num-epochs', type=int, default=200)
@@ -64,7 +61,7 @@ args, _ = argparser.parse_known_args()
 
 args.inductive = True
 
-
+# record the accuracy and fidelity of three responces
 surrogate_projection_accuracy = []
 surrogate_prediction_accuracy = []
 surrogate_embedding_accuracy = []
@@ -81,7 +78,7 @@ if args.gpu >= 0:
 else:
     device = th.device('cpu')
 
-
+# load dataset
 g, n_classes = load_graphgallery_data(args.dataset)
 
 
@@ -315,6 +312,7 @@ else:
     print("wrong structure params... stop!")
     sys.exit()
 
+# save the attack result
 with open(_filename, 'a') as wf:
     wf.write("%s,%d,%s,%d,%s,%d,%f,%f,%f,%f\n" % (args.target_model,
                                                   args.target_model_dim,
